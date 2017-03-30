@@ -46,13 +46,21 @@ pub fn get_full_url(code: &str) -> Result<String, LookupError> {
     }
 }
 
-pub fn get_code_meta(code: &str) -> Result<CodeMeta, LookupError> {
-    let key = format!("meta/{}", code.clone().to_uppercase());
+pub fn get_code_meta(code: &str) -> Result<CodeMetaResponse, LookupError> {
+    let shortcode = code.to_uppercase();
+    let key = format!("meta/{}", shortcode);
     let client = try!(get_client().map_err(|e| LookupError::DBError(e)));
     let conn = try!(client.get_connection().map_err(|e| LookupError::DBError(e)));
-    let resp: redis::RedisResult<String> = conn.get(key);
-    match resp {
-        Ok(meta) => Ok(serde_json::from_str(meta.as_str()).unwrap()),
+    let resp_url = get_full_url(shortcode.as_str());
+    let resp_meta: redis::RedisResult<String> = conn.get(key);
+    match resp_meta {
+        Ok(meta) => match resp_url {
+            Ok(url) => Ok(CodeMetaResponse {
+                full_url: url,
+                meta: serde_json::from_str(meta.as_str()).unwrap(),
+            }),
+            Err(err) => Err(err),
+        },
         Err(err) => {
             match err.kind() {
                 // TypeError = got a nil (no such key)

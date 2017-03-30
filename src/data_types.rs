@@ -42,6 +42,12 @@ pub struct CodeMeta {
     pub user_meta: Option<String>,
 }
 
+#[derive(Serialize, Debug)]
+pub struct CodeMetaResponse {
+    pub full_url: String,
+    pub meta: CodeMeta,
+}
+
 pub static NO_APIKEY_ERROR: GenericError = GenericError {
     error: "nokey",
     message: Some("No API key in X-API-Key header.")};
