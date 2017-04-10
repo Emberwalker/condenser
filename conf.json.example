@@ -5,7 +5,7 @@
       "name": "Test User"
     }
   ],
-  "redis_conn": "redis://localhost:6379",
+  "redis_conn": "localhost:6379",
   "codelen": 6,
   "server_url": "http://localhost:8000"
 }
