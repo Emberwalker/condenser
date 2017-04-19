@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
 	"net/http"
 	"strings"
+
+	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 )
 
 var e = echo.New()
@@ -33,19 +34,19 @@ func shorten(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "URLs must start with http(s)://")
 	}
 
-	var fullUrl string
+	var fullURL string
 	errCode := InsertDBError
 	key := c.Get("APIKey").(APIKey)
 	if req.Code != "" {
-		fullUrl, errCode = addURLWithCode(req.URL, req.Code, req.Meta, key)
+		fullURL, errCode = addURLWithCode(req.URL, req.Code, req.Meta, key)
 	} else {
-		fullUrl, errCode = addURL(req.URL, req.Meta, key)
+		fullURL, errCode = addURL(req.URL, req.Meta, key)
 	}
 
 	switch errCode {
 	case InsertSuccess:
 		return c.JSON(http.StatusOK, &ShortenResponse{
-			ShortURL: fullUrl,
+			ShortURL: fullURL,
 		})
 	case InsertConflict:
 		return echo.NewHTTPError(http.StatusConflict, "Code already exists.")

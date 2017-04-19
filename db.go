@@ -3,15 +3,16 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/go-redis/redis"
 	"math/rand"
 	"strings"
 	"time"
+
+	"github.com/go-redis/redis"
 )
 
 var (
-	_client     *redis.Client = nil
-	_randSeeded               = false
+	_client     *redis.Client
+	_randSeeded = false
 )
 
 // '0' and '1' dropped as they are hard to distinguish from O and I
@@ -58,10 +59,8 @@ func getFullURL(code string) (string, int) {
 		default:
 			if val, err := client.Get(code).Result(); err == nil {
 				return val, LookupSuccess
-			} else {
-				return "", LookupDBError
 			}
-
+			return "", LookupDBError
 		}
 	} else {
 		return "", LookupDBError
@@ -82,17 +81,16 @@ func getCodeMeta(code string) (CodeMetaResponse, int) {
 				if err != nil {
 					return CodeMetaResponse{}, LookupDBError
 				}
-				fullUrl, err := getFullURL(code)
+				fullURL, err := getFullURL(code)
 				if err != LookupSuccess {
 					return CodeMetaResponse{}, LookupDBError
 				}
 				return CodeMetaResponse{
-					FullURL: fullUrl,
+					FullURL: fullURL,
 					Meta:    *meta,
 				}, LookupSuccess
-			} else {
-				return CodeMetaResponse{}, LookupDBError
 			}
+			return CodeMetaResponse{}, LookupDBError
 		}
 	} else {
 		return CodeMetaResponse{}, LookupDBError
@@ -116,9 +114,8 @@ func deleteCode(code string) (DeleteResponse, int) {
 					Code:   code,
 					Status: "deleted",
 				}, DeleteSuccess
-			} else {
-				return DeleteResponse{}, DeleteDBError
 			}
+			return DeleteResponse{}, DeleteDBError
 		}
 	} else {
 		return DeleteResponse{}, DeleteDBError
@@ -131,7 +128,7 @@ func addURLWithCode(url, code, meta string, user APIKey) (string, int) {
 	if val, err := client.Exists(code).Result(); err == nil {
 		switch val {
 		case 0:
-			metaJson, err := json.Marshal(&CodeMeta{
+			metaJSON, err := json.Marshal(&CodeMeta{
 				Owner:    user.Name,
 				Time:     time.Now(),
 				UserMeta: meta,
@@ -142,7 +139,7 @@ func addURLWithCode(url, code, meta string, user APIKey) (string, int) {
 			if _, err := client.Set(code, url, 0).Result(); err != nil {
 				return "", InsertDBError
 			}
-			client.Set(fmt.Sprintf("meta/%s", code), metaJson, 0)
+			client.Set(fmt.Sprintf("meta/%s", code), metaJSON, 0)
 			return fmt.Sprintf("%s/%s", getConfig().ServerURL, code), InsertSuccess
 		default:
 			return "", InsertConflict

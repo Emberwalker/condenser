@@ -16,7 +16,7 @@ type Config struct {
 
 var (
 	// LoadedConfig represents the config as loaded from the disk at startup.
-	_config *Config = nil
+	_config *Config
 	// DefaultConfig represents the out-of-box configuration.
 	DefaultConfig = Config{
 		APIKeys:    []APIKey{},
@@ -40,8 +40,8 @@ func loadConfigFile() *Config {
 	if err != nil {
 		return &DefaultConfig
 	}
-	conf_copy := DefaultConfig
-	conf := &conf_copy
+	confCopy := DefaultConfig
+	conf := &confCopy
 	err = json.Unmarshal(bytes, conf)
 	if err != nil {
 		return &DefaultConfig
