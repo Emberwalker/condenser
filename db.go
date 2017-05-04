@@ -19,20 +19,20 @@ var (
 const asciiCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ23456789"
 
 const (
-	LookupSuccess    = iota
-	LookupNoSuchCode = iota
-	LookupDBError    = iota
+	lookupSuccess    = iota
+	lookupNoSuchCode = iota
+	lookupDBError    = iota
 )
 
 const (
-	InsertSuccess  = iota
-	InsertConflict = iota
-	InsertDBError  = iota
+	insertSuccess  = iota
+	insertConflict = iota
+	insertDBError  = iota
 )
 
 const (
-	DeleteSuccess = iota
-	DeleteDBError = iota
+	deleteSuccess = iota
+	deleteDBError = iota
 )
 
 func getRedisClient() *redis.Client {
@@ -55,70 +55,70 @@ func getFullURL(code string) (string, int) {
 	if val, err := client.Exists(code).Result(); err == nil {
 		switch val {
 		case 0:
-			return "", LookupNoSuchCode
+			return "", lookupNoSuchCode
 		default:
 			if val, err := client.Get(code).Result(); err == nil {
-				return val, LookupSuccess
+				return val, lookupSuccess
 			}
-			return "", LookupDBError
+			return "", lookupDBError
 		}
 	} else {
-		return "", LookupDBError
+		return "", lookupDBError
 	}
 }
 
-func getCodeMeta(code string) (CodeMetaResponse, int) {
+func getCodeMeta(code string) (codeMetaResponse, int) {
 	client := getRedisClient()
 	code = strings.ToUpper(code)
 	if val, err := client.Exists(code).Result(); err == nil {
 		switch val {
 		case 0:
-			return CodeMetaResponse{}, LookupNoSuchCode
+			return codeMetaResponse{}, lookupNoSuchCode
 		default:
 			if valMeta, err := client.Get(fmt.Sprintf("meta/%s", code)).Result(); err == nil {
-				meta := &CodeMeta{}
+				meta := &codeMeta{}
 				err = json.Unmarshal([]byte(valMeta), meta)
 				if err != nil {
-					return CodeMetaResponse{}, LookupDBError
+					return codeMetaResponse{}, lookupDBError
 				}
 				fullURL, err := getFullURL(code)
-				if err != LookupSuccess {
-					return CodeMetaResponse{}, LookupDBError
+				if err != lookupSuccess {
+					return codeMetaResponse{}, lookupDBError
 				}
-				return CodeMetaResponse{
+				return codeMetaResponse{
 					FullURL: fullURL,
 					Meta:    *meta,
-				}, LookupSuccess
+				}, lookupSuccess
 			}
-			return CodeMetaResponse{}, LookupDBError
+			return codeMetaResponse{}, lookupDBError
 		}
 	} else {
-		return CodeMetaResponse{}, LookupDBError
+		return codeMetaResponse{}, lookupDBError
 	}
 }
 
-func deleteCode(code string) (DeleteResponse, int) {
+func deleteCode(code string) (deleteResponse, int) {
 	client := getRedisClient()
 	code = strings.ToUpper(code)
 	if val, err := client.Exists(code).Result(); err == nil {
 		switch val {
 		case 0:
-			return DeleteResponse{
+			return deleteResponse{
 				Code:   code,
 				Status: "noexist",
-			}, DeleteSuccess
+			}, deleteSuccess
 		default:
 			if err := client.Del(code).Err(); err == nil {
 				client.Del(fmt.Sprintf("meta/%s", code))
-				return DeleteResponse{
+				return deleteResponse{
 					Code:   code,
 					Status: "deleted",
-				}, DeleteSuccess
+				}, deleteSuccess
 			}
-			return DeleteResponse{}, DeleteDBError
+			return deleteResponse{}, deleteDBError
 		}
 	} else {
-		return DeleteResponse{}, DeleteDBError
+		return deleteResponse{}, deleteDBError
 	}
 }
 
@@ -128,24 +128,24 @@ func addURLWithCode(url, code, meta string, user APIKey) (string, int) {
 	if val, err := client.Exists(code).Result(); err == nil {
 		switch val {
 		case 0:
-			metaJSON, err := json.Marshal(&CodeMeta{
+			metaJSON, err := json.Marshal(&codeMeta{
 				Owner:    user.Name,
 				Time:     time.Now(),
 				UserMeta: meta,
 			})
 			if err != nil {
-				return "", InsertDBError
+				return "", insertDBError
 			}
 			if _, err := client.Set(code, url, 0).Result(); err != nil {
-				return "", InsertDBError
+				return "", insertDBError
 			}
 			client.Set(fmt.Sprintf("meta/%s", code), metaJSON, 0)
-			return fmt.Sprintf("%s/%s", getConfig().ServerURL, code), InsertSuccess
+			return fmt.Sprintf("%s/%s", getConfig().ServerURL, code), insertSuccess
 		default:
-			return "", InsertConflict
+			return "", insertConflict
 		}
 	} else {
-		return "", InsertDBError
+		return "", insertDBError
 	}
 }
 
@@ -154,12 +154,12 @@ func addURL(url, meta string, user APIKey) (string, int) {
 		code := randomASCIISequence(getConfig().CodeLength)
 		newURL, errCode := addURLWithCode(url, code, meta, user)
 		switch errCode {
-		case InsertSuccess:
+		case insertSuccess:
 			return newURL, errCode
-		case InsertConflict:
+		case insertConflict:
 			e.Logger.Warn("Duplicate code in generation. Code length too small? %s", code)
 			continue
-		case InsertDBError:
+		case insertDBError:
 			return "", errCode
 		default:
 			panic(fmt.Sprintf("Unknown return code from addURLWithCode: %v", errCode))

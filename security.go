@@ -11,7 +11,7 @@ type APIKey struct {
 	Name string `json:"name"`
 }
 
-var APIKeyMiddleware = middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
+var apiKeyMiddleware = middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
 	KeyLookup:  "header:X-API-Key",
 	AuthScheme: "",
 	Validator:  middleware.KeyAuthValidator(checkKey),

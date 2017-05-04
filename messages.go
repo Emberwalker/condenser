@@ -3,33 +3,33 @@ package main
 import "time"
 
 type (
-	ShortenRequest struct {
+	shortenRequest struct {
 		URL  string `json:"url"`
 		Code string `json:"code,omitempty"`
 		Meta string `json:"meta,omitempty"`
 	}
 
-	ShortenResponse struct {
+	shortenResponse struct {
 		ShortURL string `json:"short_url"`
 	}
 
-	DeleteRequest struct {
+	deleteRequest struct {
 		Code string `json:"code"`
 	}
 
-	DeleteResponse struct {
+	deleteResponse struct {
 		Code   string `json:"code"`
 		Status string `json:"status"`
 	}
 
-	CodeMeta struct {
+	codeMeta struct {
 		Owner    string    `json:"owner"`
 		Time     time.Time `json:"time"`
 		UserMeta string    `json:"user_meta,omitempty"`
 	}
 
-	CodeMetaResponse struct {
+	codeMetaResponse struct {
 		FullURL string   `json:"full_url"`
-		Meta    CodeMeta `json:"meta"`
+		Meta    codeMeta `json:"meta"`
 	}
 )

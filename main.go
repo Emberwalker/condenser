@@ -11,12 +11,12 @@ import (
 var e = echo.New()
 
 func main() {
-	e.HTTPErrorHandler = echo.HTTPErrorHandler(CondenserHTTPErrorHandler)
+	e.HTTPErrorHandler = echo.HTTPErrorHandler(condenserHTTPErrorHandler)
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Recover())
 
-	e.POST("/api/shorten", shorten, APIKeyMiddleware)
-	e.POST("/api/delete", delete, APIKeyMiddleware)
+	e.POST("/api/shorten", shorten, apiKeyMiddleware)
+	e.POST("/api/delete", delete, apiKeyMiddleware)
 	e.GET("/api/meta/:code", meta)
 	e.GET("/:code", shortcode)
 
@@ -24,7 +24,7 @@ func main() {
 }
 
 func shorten(c echo.Context) error {
-	req := new(ShortenRequest)
+	req := new(shortenRequest)
 	if err := c.Bind(req); err != nil {
 		return err // already in HTTPError if applicable.
 	}
@@ -35,7 +35,7 @@ func shorten(c echo.Context) error {
 	}
 
 	var fullURL string
-	errCode := InsertDBError
+	errCode := insertDBError
 	key := c.Get("APIKey").(APIKey)
 	if req.Code != "" {
 		fullURL, errCode = addURLWithCode(req.URL, req.Code, req.Meta, key)
@@ -44,11 +44,11 @@ func shorten(c echo.Context) error {
 	}
 
 	switch errCode {
-	case InsertSuccess:
-		return c.JSON(http.StatusOK, &ShortenResponse{
+	case insertSuccess:
+		return c.JSON(http.StatusOK, &shortenResponse{
 			ShortURL: fullURL,
 		})
-	case InsertConflict:
+	case insertConflict:
 		return echo.NewHTTPError(http.StatusConflict, "Code already exists.")
 	default:
 		return echo.NewHTTPError(http.StatusInternalServerError, "Something went wrong on our end.")
@@ -56,14 +56,14 @@ func shorten(c echo.Context) error {
 }
 
 func delete(c echo.Context) error {
-	req := new(DeleteRequest)
+	req := new(deleteRequest)
 	if err := c.Bind(req); err != nil {
 		return err // already in HTTPError if applicable.
 	}
 
 	resp, errCode := deleteCode(req.Code)
 	switch errCode {
-	case DeleteSuccess:
+	case deleteSuccess:
 		return c.JSON(http.StatusOK, resp)
 	default:
 		return echo.NewHTTPError(http.StatusInternalServerError, "Something went wrong on our end.")
@@ -73,9 +73,9 @@ func delete(c echo.Context) error {
 func meta(c echo.Context) error {
 	meta, errCode := getCodeMeta(c.Param("code"))
 	switch errCode {
-	case LookupSuccess:
+	case lookupSuccess:
 		return c.JSON(http.StatusOK, meta)
-	case LookupNoSuchCode:
+	case lookupNoSuchCode:
 		return echo.NewHTTPError(http.StatusNotFound, "Shortcode does not exist.")
 	default:
 		return echo.NewHTTPError(http.StatusInternalServerError, "Something went wrong on our end.")
@@ -85,9 +85,9 @@ func meta(c echo.Context) error {
 func shortcode(c echo.Context) error {
 	target, errCode := getFullURL(c.Param("code"))
 	switch errCode {
-	case LookupSuccess:
+	case lookupSuccess:
 		return c.Redirect(http.StatusTemporaryRedirect, target)
-	case LookupNoSuchCode:
+	case lookupNoSuchCode:
 		return echo.NewHTTPError(http.StatusNotFound, "Shortcode does not exist.")
 	default:
 		return echo.NewHTTPError(http.StatusInternalServerError, "Something went wrong on our end.")
