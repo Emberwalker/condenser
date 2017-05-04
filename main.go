@@ -4,13 +4,21 @@ import (
 	"net/http"
 	"strings"
 
+	"os"
+
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/labstack/gommon/log"
 )
 
-var e = echo.New()
+var (
+	e      = echo.New()
+	logger = log.New("condenser")
+)
 
 func main() {
+	initLogger()
+
 	e.HTTPErrorHandler = echo.HTTPErrorHandler(condenserHTTPErrorHandler)
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Recover())
@@ -20,7 +28,22 @@ func main() {
 	e.GET("/api/meta/:code", meta)
 	e.GET("/:code", shortcode)
 
-	e.Logger.Fatal(e.Start(":8000"))
+	if listenAddr := os.Getenv("CONDENSER_LISTEN"); listenAddr != "" {
+		logger.Fatal(e.Start(listenAddr))
+	} else {
+		logger.Fatal(e.Start(":8000"))
+	}
+}
+
+func initLogger() {
+	logger.SetLevel(log.OFF)
+
+	dbgEnv := os.Getenv("CONDENSER_DEBUG")
+	if dbgEnv != "" {
+		e.Logger.SetLevel(log.INFO)
+		logger.SetLevel(log.DEBUG)
+		logger.Warn("Running in DEBUG configuration.")
+	}
 }
 
 func shorten(c echo.Context) error {
@@ -28,6 +51,7 @@ func shorten(c echo.Context) error {
 	if err := c.Bind(req); err != nil {
 		return err // already in HTTPError if applicable.
 	}
+	logger.Debugf("shorten: %+v", req)
 
 	lowerURL := strings.ToLower(req.URL)
 	if !(strings.HasPrefix(lowerURL, "http://") || strings.HasPrefix(lowerURL, "https://")) {
@@ -60,6 +84,7 @@ func delete(c echo.Context) error {
 	if err := c.Bind(req); err != nil {
 		return err // already in HTTPError if applicable.
 	}
+	logger.Debugf("delete: %+v", req)
 
 	resp, errCode := deleteCode(req.Code)
 	switch errCode {
@@ -71,7 +96,9 @@ func delete(c echo.Context) error {
 }
 
 func meta(c echo.Context) error {
-	meta, errCode := getCodeMeta(c.Param("code"))
+	code := c.Param("code")
+	logger.Debugf("meta: %s", code)
+	meta, errCode := getCodeMeta(code)
 	switch errCode {
 	case lookupSuccess:
 		return c.JSON(http.StatusOK, meta)
@@ -83,7 +110,9 @@ func meta(c echo.Context) error {
 }
 
 func shortcode(c echo.Context) error {
-	target, errCode := getFullURL(c.Param("code"))
+	code := c.Param("code")
+	logger.Debugf("shortcode: %s", code)
+	target, errCode := getFullURL(code)
 	switch errCode {
 	case lookupSuccess:
 		return c.Redirect(http.StatusTemporaryRedirect, target)

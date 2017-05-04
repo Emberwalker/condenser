@@ -20,7 +20,7 @@ var (
 	// DefaultConfig represents the out-of-box configuration.
 	DefaultConfig = Config{
 		APIKeys:    []APIKey{},
-		RedisConn:  "redis://127.0.0.1:6379",
+		RedisConn:  "127.0.0.1:6379",
 		CodeLength: 6,
 		ServerURL:  "http://localhost:8000",
 	}

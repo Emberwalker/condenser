@@ -60,9 +60,11 @@ func getFullURL(code string) (string, int) {
 			if val, err := client.Get(code).Result(); err == nil {
 				return val, lookupSuccess
 			}
+			logger.Warnf("DB error: %+v", err)
 			return "", lookupDBError
 		}
 	} else {
+		logger.Warnf("DB error: %+v", err)
 		return "", lookupDBError
 	}
 }
@@ -79,6 +81,7 @@ func getCodeMeta(code string) (codeMetaResponse, int) {
 				meta := &codeMeta{}
 				err = json.Unmarshal([]byte(valMeta), meta)
 				if err != nil {
+					logger.Warnf("json unmarshal error: %+v", err)
 					return codeMetaResponse{}, lookupDBError
 				}
 				fullURL, err := getFullURL(code)
@@ -90,9 +93,11 @@ func getCodeMeta(code string) (codeMetaResponse, int) {
 					Meta:    *meta,
 				}, lookupSuccess
 			}
+			logger.Warnf("DB error: %+v", err)
 			return codeMetaResponse{}, lookupDBError
 		}
 	} else {
+		logger.Warnf("DB error: %+v", err)
 		return codeMetaResponse{}, lookupDBError
 	}
 }
@@ -115,9 +120,11 @@ func deleteCode(code string) (deleteResponse, int) {
 					Status: "deleted",
 				}, deleteSuccess
 			}
+			logger.Warnf("DB error: %+v", err)
 			return deleteResponse{}, deleteDBError
 		}
 	} else {
+		logger.Warnf("DB error: %+v", err)
 		return deleteResponse{}, deleteDBError
 	}
 }
@@ -134,9 +141,11 @@ func addURLWithCode(url, code, meta string, user APIKey) (string, int) {
 				UserMeta: meta,
 			})
 			if err != nil {
+				logger.Warnf("json marshal error: %+v", err)
 				return "", insertDBError
 			}
 			if _, err := client.Set(code, url, 0).Result(); err != nil {
+				logger.Warnf("DB error: %+v", err)
 				return "", insertDBError
 			}
 			client.Set(fmt.Sprintf("meta/%s", code), metaJSON, 0)
@@ -145,6 +154,7 @@ func addURLWithCode(url, code, meta string, user APIKey) (string, int) {
 			return "", insertConflict
 		}
 	} else {
+		logger.Warnf("DB error: %+v", err)
 		return "", insertDBError
 	}
 }
@@ -157,7 +167,7 @@ func addURL(url, meta string, user APIKey) (string, int) {
 		case insertSuccess:
 			return newURL, errCode
 		case insertConflict:
-			e.Logger.Warn("Duplicate code in generation. Code length too small? %s", code)
+			logger.Warnf("Duplicate code in generation. Code length too small? %s", code)
 			continue
 		case insertDBError:
 			return "", errCode
