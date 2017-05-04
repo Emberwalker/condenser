@@ -23,9 +23,17 @@ func main() {
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Recover())
 
+	// v1
+	e.POST("/api/v1/shorten", shorten, apiKeyMiddleware)
+	e.POST("/api/v1/delete", delete, apiKeyMiddleware)
+	e.GET("/api/v1/meta/:code", meta)
+
+	// Legacy
 	e.POST("/api/shorten", shorten, apiKeyMiddleware)
 	e.POST("/api/delete", delete, apiKeyMiddleware)
 	e.GET("/api/meta/:code", meta)
+
+	// Shortcodes
 	e.GET("/:code", shortcode)
 
 	if listenAddr := os.Getenv("CONDENSER_LISTEN"); listenAddr != "" {
