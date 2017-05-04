@@ -10,7 +10,8 @@
             "env": {
                 "CONDENSER_DEBUG": "true",
                 "CONDENSER_LISTEN": "127.0.0.1:8000"
-            }
+            },
+            "internalConsoleOptions": "openOnSessionStart"
         }
     ]
 }
