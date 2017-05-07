@@ -46,7 +46,7 @@ defmodule Condenser.RedisWorker do
 
   def handle_call({:set, key, value}, _from, client) do
     {:ok, 'OK'} = :eredis.q client, ['SET', String.to_charlist(key), String.to_charlist(value)]
-    {:reply, :ok}
+    {:reply, :ok, client}
   end
 
   def handle_call({:get, key}, _from, client) do

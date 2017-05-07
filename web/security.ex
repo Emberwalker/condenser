@@ -20,14 +20,14 @@ defmodule Condenser.Security do
     GenServer.call(__MODULE__, {:get, key})
   end
 
-  def handle_call({:config_changed}, old_keys) do
+  def handle_call({:config_changed}, _from, old_keys) do
     keys = get_config()
     info "Reloading security server configuration; #{length(old_keys)} keys -> #{length(keys)} keys"
     {:noreply, keys}
   end
 
-  def handle_call({:get, key}, keys) do
-    found = Enum.find(keys, fn ent -> ent.key == key end)
+  def handle_call({:get, user_key}, _from, keys) do
+    found = Enum.find(keys, fn(ex) -> ex.key == user_key end)
     res = case found do
       nil -> {:noexist, nil}
       x -> {:ok, x}
