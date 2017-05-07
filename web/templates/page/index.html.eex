@@ -1,6 +1,16 @@
 <div class="jumbotron">
-  <h2><%= gettext "Welcome to %{name}", name: "Phoenix!" %></h2>
-  <p class="lead">A productive web framework that<br />does not compromise speed and maintainability.</p>
+  <h2>Condenser</h2>
+  <p class="lead">URL Shortening Service running on<br/><%= @conn.host %></p>
+</div>
+
+<div class="row">
+  <div class="col-lg-12">
+    <h4>API Keys</h4>
+    <p>
+      To use Condenser on this server, you will need an API key provided by the server administrator.
+      Documentation on configuring API keys can be found in the source code respository.
+    </p>
+  </div>
 </div>
 
 <div class="row marketing">
@@ -8,28 +18,22 @@
     <h4>Resources</h4>
     <ul>
       <li>
-        <a href="http://phoenixframework.org/docs/overview">Guides</a>
+        <a href="https://github.com/Emberwalker/condenser">Source Code</a>
       </li>
       <li>
-        <a href="https://hexdocs.pm/phoenix">Docs</a>
-      </li>
-      <li>
-        <a href="https://github.com/phoenixframework/phoenix">Source</a>
+        Powered by <a href="http://www.phoenixframework.org/">Phoenix</a>
       </li>
     </ul>
   </div>
 
   <div class="col-lg-6">
-    <h4>Help</h4>
+    <h4>Clients</h4>
     <ul>
       <li>
-        <a href="http://groups.google.com/group/phoenix-talk">Mailing list</a>
+        <a href="https://github.com/Emberwalker/Drakonid">Drakonid (Discord Bot)</a>
       </li>
       <li>
-        <a href="http://webchat.freenode.net/?channels=elixir-lang">#elixir-lang on freenode IRC</a>
-      </li>
-      <li>
-        <a href="https://twitter.com/elixirphoenix">@elixirphoenix</a>
+        <a href="http://webchat.freenode.net/?channels=elixir-lang">Pare (Go CLI Client)</a>
       </li>
     </ul>
   </div>

@@ -3,9 +3,6 @@ defmodule Condenser.Router do
 
   pipeline :browser do
     plug :accepts, ["html"]
-    plug :fetch_session
-    plug :fetch_flash
-    plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :put_headers, %{server: "Condenser (Phoenix/Plug)"}
   end
@@ -19,11 +16,22 @@ defmodule Condenser.Router do
     pipe_through :browser # Use the default browser stack
 
     get "/", PageController, :index
+    get "/:code", CodeController, :shortcode
   end
 
   # Other scopes may use custom stacks.
   scope "/api", Condenser do
     pipe_through :api
+
+    get "/meta/:code", V1.PublicController, :meta
+    post "/shorten", V1.SecureController, :shorten
+    post "/delete", V1.SecureController, :delete
+
+    scope "/v1", V1, as: :v1 do
+      get "/meta/:code", PublicController, :meta
+      post "/shorten", SecureController, :shorten
+      post "/delete", SecureController, :delete
+    end
   end
 
   # Custom plugs

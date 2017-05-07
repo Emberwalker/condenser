@@ -1,7 +1,7 @@
 defmodule Condenser.Endpoint do
   use Phoenix.Endpoint, otp_app: :condenser
 
-  socket "/socket", Condenser.UserSocket
+  #socket "/socket", Condenser.UserSocket
 
   # Serve at "/" the static files from "priv/static" directory.
   #
