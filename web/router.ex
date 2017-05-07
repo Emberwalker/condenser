@@ -20,7 +20,7 @@ defmodule Condenser.Router do
   end
 
   # Other scopes may use custom stacks.
-  scope "/api", Condenser do
+  scope "/api", Condenser.API do
     pipe_through :api
 
     get "/meta/:code", V1.PublicController, :meta

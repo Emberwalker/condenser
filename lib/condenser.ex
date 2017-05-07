@@ -12,6 +12,7 @@ defmodule Condenser do
       supervisor(Condenser.Endpoint, []),
       # Start Condenser.RedisWorker via start_link/1
       worker(Condenser.RedisWorker, [Condenser.RedisWorker]),
+      worker(Condenser.Security, []),
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
