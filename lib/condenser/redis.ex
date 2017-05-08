@@ -31,6 +31,11 @@ defmodule Condenser.RedisWorker do
   def get(key) do
     GenServer.call(__MODULE__, {:get, key})
   end
+
+  @spec del(String.t) :: atom
+  def del(key) do
+    GenServer.call(__MODULE__, {:del, key})
+  end
   
   def handle_call({:config_changed}, _from, client) do
     warn "Restarting Eredis client due to config change."
@@ -45,7 +50,7 @@ defmodule Condenser.RedisWorker do
   end
 
   def handle_call({:set, key, value}, _from, client) do
-    {:ok, 'OK'} = :eredis.q client, ['SET', String.to_charlist(key), String.to_charlist(value)]
+    {:ok, "OK"} = :eredis.q client, ['SET', String.to_charlist(key), String.to_charlist(value)]
     {:reply, :ok, client}
   end
 
@@ -56,6 +61,15 @@ defmodule Condenser.RedisWorker do
         x -> {:ok, x}
     end
     {:reply, resp, client}
+  end
+
+  def handle_call({:del, key}, _from, client) do
+    {:ok, res} = :eredis.q client, ['DEL', String.to_charlist(key)]
+    res = case String.to_integer(res) do
+      0 -> :noexist
+      _ -> :deleted
+    end
+    {:reply, res, client}
   end
 
   @spec get_client() :: pid

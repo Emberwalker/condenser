@@ -2,8 +2,9 @@ defmodule Condenser.API.V1.PublicController do
   use Condenser.Web, :controller
   alias Condenser.RedisWorker, as: Redis
 
-  def meta(conn, params) do
-    code = String.upcase(params["code"])
+  def meta(conn, %{"code" => code}) do
+    code = String.upcase(code)
+    IO.inspect code
     case Redis.get("meta/#{code}") do
       {:noexist, _} -> conn
                        |> send_resp(404, Poison.encode!(%{

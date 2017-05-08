@@ -27,7 +27,6 @@ defmodule Condenser.Web do
       use Phoenix.Controller
 
       import Condenser.Router.Helpers
-      import Condenser.Gettext
     end
   end
 
@@ -42,8 +41,6 @@ defmodule Condenser.Web do
       use Phoenix.HTML
 
       import Condenser.Router.Helpers
-      import Condenser.ErrorHelpers
-      import Condenser.Gettext
     end
   end
 
@@ -56,7 +53,6 @@ defmodule Condenser.Web do
   def channel do
     quote do
       use Phoenix.Channel
-      import Condenser.Gettext
     end
   end
 
