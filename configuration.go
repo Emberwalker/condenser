@@ -22,7 +22,7 @@ var (
 		APIKeys:    []APIKey{},
 		RedisConn:  "127.0.0.1:6379",
 		CodeLength: 6,
-		ServerURL:  "http://localhost:8000",
+		ServerURL:  "http://0.0.0.0:8000",
 	}
 )
 
@@ -38,7 +38,8 @@ func getConfig() *Config {
 func loadConfigFile() *Config {
 	bytes, err := ioutil.ReadFile("conf.json")
 	if err != nil {
-		return &DefaultConfig
+		panic("No config file found.")
+		//return &DefaultConfig
 	}
 	confCopy := DefaultConfig
 	conf := &confCopy

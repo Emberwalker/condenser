@@ -19,6 +19,9 @@ var (
 func main() {
 	initLogger()
 
+	// Force the check for a config file at launch
+	_ = getConfig()
+
 	e.HTTPErrorHandler = echo.HTTPErrorHandler(condenserHTTPErrorHandler)
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Recover())
